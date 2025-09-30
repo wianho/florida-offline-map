@@ -6,7 +6,7 @@ Lightweight PWA for offline Florida maps with GPS support.
 
 ### 1. Test it now (online)
 ```bash
-cd Z:/5_Projects/Active_Development/florida-offline-map
+cd C:/your/project/folder/florida-offline-map
 python -m http.server 8000
 ```
 Then open: http://localhost:8000
