@@ -1,22 +1,78 @@
 {
-  "name": "Florida Offline Map",
-  "short_name": "FL Map",
-  "description": "Offline map of Florida with GPS support",
+  "name": "Florida Marine Navigation - Ultimate Dataset",
+  "short_name": "FL Marine Nav",
+  "description": "Professional marine navigation for Florida with comprehensive NOAA depth soundings. 191 features covering all coastal waters.",
+  "version": "3.0.0",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#2196F3",
+  "background_color": "#1e40af",
+  "theme_color": "#1e40af",
   "orientation": "any",
+  "scope": "/",
+
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%231e40af'/%3E%3Cpath d='M30 40h40v20H30z' fill='white'/%3E%3Ccircle cx='35' cy='45' r='2' fill='%231e40af'/%3E%3Ccircle cx='45' cy='45' r='2' fill='%231e40af'/%3E%3Ccircle cx='55' cy='45' r='2' fill='%231e40af'/%3E%3Ccircle cx='65' cy='45' r='2' fill='%231e40af'/%3E%3Ccircle cx='35' cy='55' r='2' fill='%231e40af'/%3E%3Ccircle cx='45' cy='55' r='2' fill='%231e40af'/%3E%3Ccircle cx='55' cy='55' r='2' fill='%231e40af'/%3E%3Ccircle cx='65' cy='55' r='2' fill='%231e40af'/%3E%3C/svg%3E",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAdgAAAHYBTnsmCAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAJYSURBVFiFtZe9axRBFMaftwkWNhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYW",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "icon-512.png",
+      "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAdgAAAHYBTnsmCAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAJYSURBVFiFtZe9axRBFMaftwkWNhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYW",
       "sizes": "512x512",
       "type": "image/png"
+    }
+  ],
+
+  "screenshots": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 390 844'%3E%3Crect width='390' height='844' fill='%23f0f9ff'/%3E%3Crect x='20' y='100' width='350' height='600' fill='%23e0f2fe' stroke='%231e40af' stroke-width='2'/%3E%3Ctext x='195' y='140' text-anchor='middle' fill='%231e40af' font-size='18' font-weight='bold'%3EFlorida Marine Navigation%3C/text%3E%3Ccircle cx='100' cy='200' r='4' fill='%23dc2626'/%3E%3Ccircle cx='150' cy='220' r='4' fill='%23ea580c'/%3E%3Ccircle cx='200' cy='240' r='4' fill='%23ca8a04'/%3E%3Ccircle cx='250' cy='260' r='4' fill='%230891b2'/%3E%3Ccircle cx='300' cy='280' r='4' fill='%231e40af'/%3E%3Ctext x='195' y='780' text-anchor='middle' fill='%236b7280' font-size='14'%3E191 NOAA Depth Soundings%3C/text%3E%3C/svg%3E",
+      "sizes": "390x844",
+      "type": "image/svg+xml",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1024 768'%3E%3Crect width='1024' height='768' fill='%23f0f9ff'/%3E%3Crect x='50' y='50' width='924' height='668' fill='%23e0f2fe' stroke='%231e40af' stroke-width='3'/%3E%3Ctext x='512' y='100' text-anchor='middle' fill='%231e40af' font-size='24' font-weight='bold'%3EFlorida Marine Navigation - Desktop%3C/text%3E%3Ccircle cx='200' cy='200' r='6' fill='%23dc2626'/%3E%3Ccircle cx='300' cy='250' r='6' fill='%23ea580c'/%3E%3Ccircle cx='400' cy='300' r='6' fill='%23ca8a04'/%3E%3Ccircle cx='500' cy='350' r='6' fill='%230891b2'/%3E%3Ccircle cx='600' cy='400' r='6' fill='%231e40af'/%3E%3Ctext x='512' y='650' text-anchor='middle' fill='%236b7280' font-size='18'%3EComprehensive NOAA ENC Dataset - 191 Features%3C/text%3E%3C/svg%3E",
+      "sizes": "1024x768",
+      "type": "image/svg+xml",
+      "form_factor": "wide"
+    }
+  ],
+
+  "categories": ["navigation", "utilities", "travel"],
+
+  "shortcuts": [
+    {
+      "name": "Open Map",
+      "short_name": "Map",
+      "description": "Open the marine navigation map",
+      "url": "/",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231e40af'%3E%3Cpath d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z'/%3E%3C/svg%3E",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+
+  "prefer_related_applications": false,
+
+  "lang": "en-US",
+
+  "edge_side_panel": {
+    "preferred_width": 480
+  },
+
+  "protocol_handlers": [
+    {
+      "protocol": "geo",
+      "url": "/?lat=%s&lon=%s"
     }
   ]
 }

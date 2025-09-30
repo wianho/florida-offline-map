@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head><title>GeoJSON Test</title></head>
+<body>
+<h1>Testing GeoJSON Load</h1>
+<div id="status">Loading...</div>
+<div id="result"></div>
+
+<script>
+async function testLoad() {
+    const status = document.getElementById('status');
+    const result = document.getElementById('result');
+
+    try {
+        status.textContent = 'Fetching GeoJSON...';
+        const response = await fetch('florida-ultimate-soundings.geojson');
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        status.textContent = 'Parsing JSON...';
+        const data = await response.json();
+
+        status.textContent = 'Success!';
+        result.innerHTML = `
+            <h2>Loaded Successfully!</h2>
+            <p>Type: ${data.type}</p>
+            <p>Features: ${data.features.length}</p>
+            <p>First feature coordinates: ${JSON.stringify(data.features[0].geometry.coordinates[0])}</p>
+        `;
+
+    } catch (error) {
+        status.textContent = 'Error!';
+        result.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+        console.error('Detailed error:', error);
+    }
+}
+
+testLoad();
+</script>
+</body>
+</html>

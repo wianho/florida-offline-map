@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#2196F3">
-    <title>Florida Offline Map</title>
+    <title>Florida Marine Navigation - Ultimate Dataset</title>
+
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#1e40af">
+    <meta name="description" content="Offline marine navigation for Florida with comprehensive NOAA depth soundings">
+    <link rel="manifest" href="manifest.json">
 
     <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
-    <!-- Manifest for PWA -->
-    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
     <style>
         * {
@@ -21,173 +22,447 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
             overflow: hidden;
         }
 
         #map {
-            width: 100vw;
             height: 100vh;
+            width: 100vw;
         }
 
-        .info-box {
+        /* Loading Indicator */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            color: white;
+            font-size: 18px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Control Panel */
+        .control-panel {
             position: absolute;
             top: 10px;
             right: 10px;
-            background: white;
-            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.2);
             z-index: 1000;
+            min-width: 250px;
+        }
+
+        .control-panel h3 {
+            margin-bottom: 10px;
+            color: #1e40af;
+            font-size: 16px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
             font-size: 14px;
         }
 
-        .offline-indicator {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: #4CAF50;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            z-index: 1000;
-            display: none;
-        }
-
-        .offline-indicator.offline {
-            background: #FF9800;
-            display: block;
-        }
-
-        .layer-control {
-            position: absolute;
-            top: 70px;
-            left: 10px;
-            background: white;
-            padding: 12px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            z-index: 1000;
-            font-size: 13px;
-        }
-
-        .layer-control label {
-            display: block;
-            margin: 6px 0;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .layer-control input[type="checkbox"] {
+        .control-group input[type="checkbox"] {
             margin-right: 8px;
-            cursor: pointer;
         }
 
-        .layer-control h4 {
-            margin: 0 0 8px 0;
+        .control-group select {
+            width: 100%;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .stats {
+            font-size: 12px;
+            color: #666;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+
+        /* Legend */
+        .legend {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+
+        .legend h4 {
+            margin-bottom: 8px;
+            color: #1e40af;
             font-size: 14px;
-            color: #333;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+            font-size: 12px;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-right: 8px;
+            border: 1px solid #333;
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 768px) {
+            .control-panel {
+                top: 5px;
+                right: 5px;
+                left: 5px;
+                width: auto;
+                min-width: auto;
+            }
+
+            .legend {
+                bottom: 5px;
+                left: 5px;
+                right: 5px;
+                width: auto;
+            }
+
+            .legend-item {
+                display: inline-block;
+                margin-right: 15px;
+                margin-bottom: 8px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="offline-indicator" id="offlineIndicator">
-        📡 Offline Mode
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <div>Loading Florida Marine Data...</div>
+        <div id="loadingStatus" style="font-size: 14px; margin-top: 10px; opacity: 0.8;"></div>
     </div>
 
-    <div class="layer-control">
-        <h4>🗺️ Layers</h4>
-        <label>
-            <input type="checkbox" id="openSeaMapToggle">
-            ⚓ Marine Features
-        </label>
-        <label>
-            <input type="checkbox" id="noaaToggle">
-            📊 NOAA Charts
-        </label>
-    </div>
-
+    <!-- Map Container -->
     <div id="map"></div>
 
-    <!-- Leaflet JS -->
+    <!-- Control Panel -->
+    <div class="control-panel">
+        <h3>⚓ Navigation Controls</h3>
+
+        <div class="control-group">
+            <label>
+                <input type="checkbox" id="toggleSoundings" checked>
+                Show Depth Soundings
+            </label>
+        </div>
+
+        <div class="control-group">
+            <label for="depthFilter">Depth Range Filter:</label>
+            <select id="depthFilter">
+                <option value="all">All Depths</option>
+                <option value="shallow">Shallow (0-6m)</option>
+                <option value="medium">Medium (6-15m)</option>
+                <option value="deep">Deep (15m+)</option>
+                <option value="critical">Critical (&lt;3m)</option>
+            </select>
+        </div>
+
+        <div class="stats">
+            <div id="featureCount">Loading soundings...</div>
+            <div id="datasetInfo">Ultimate Florida Dataset</div>
+            <div>📊 NOAA ENC Data</div>
+        </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+        <h4>🗺️ Depth Legend</h4>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #dc2626;"></div>
+            <span>0-3m (Critical)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #ea580c;"></div>
+            <span>3-6m (Shallow)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #ca8a04;"></div>
+            <span>6-10m (Moderate)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #0891b2;"></div>
+            <span>10-15m (Safe)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #1e40af;"></div>
+            <span>15m+ (Deep)</span>
+        </div>
+    </div>
+
+    <!-- Leaflet JavaScript -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        // Initialize map centered on Florida
-        const map = L.map('map').setView([27.6648, -81.5158], 7);
+        // Global variables
+        let map;
+        let soundingsLayer;
+        let allSoundings = [];
 
-        // Add OpenStreetMap tile layer (base layer)
-        const baseLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
+        // Initialize map
+        function initMap() {
+            map = L.map('map', {
+                center: [27.5, -82.5], // Central Florida
+                zoom: 7,
+                zoomControl: true,
+                attributionControl: true
+            });
 
-        // OpenSeaMap marine chart overlay (buoys, markers, etc)
-        const openSeaMapLayer = L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
-            maxZoom: 18,
-            attribution: '© OpenSeaMap contributors',
-            opacity: 0.8
-        });
+            // Base layers
+            const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 18
+            });
 
-        // NOAA ENC Nautical Charts (depth soundings - new 2025 service)
-        const noaaLayer = L.tileLayer.wms('https://gis.charttools.noaa.gov/arcgis/rest/services/MCS/NOAAChartDisplay/MapServer/exts/MaritimeChartService/WMSServer', {
-            layers: '0,1,2,3,4,5,6,7,8,9,10',
-            format: 'image/png',
-            transparent: true,
-            attribution: '© NOAA',
-            opacity: 0.7,
-            maxZoom: 18
-        });
+            const nauticalLayer = L.tileLayer('https://tileservice.charts.noaa.gov/tiles/50000_1/{z}/{x}/{y}.png', {
+                attribution: '© NOAA Nautical Charts',
+                maxZoom: 18
+            });
 
-        // Toggle OpenSeaMap layer
-        document.getElementById('openSeaMapToggle').addEventListener('change', function(e) {
-            if (e.target.checked) {
-                openSeaMapLayer.addTo(map);
-            } else {
-                map.removeLayer(openSeaMapLayer);
+            // Add default layer
+            osmLayer.addTo(map);
+
+            // Layer control
+            const baseLayers = {
+                "OpenStreetMap": osmLayer,
+                "NOAA Nautical": nauticalLayer
+            };
+
+            L.control.layers(baseLayers).addTo(map);
+
+            // Load soundings data
+            loadSoundingsData();
+        }
+
+        // Load the ultimate soundings dataset
+        async function loadSoundingsData() {
+            try {
+                updateLoadingStatus('Fetching ultimate dataset...');
+
+                const response = await fetch('florida-ultimate-soundings.geojson');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                updateLoadingStatus('Processing 191 features...');
+                const data = await response.json();
+
+                updateLoadingStatus('Rendering depth soundings...');
+                allSoundings = data.features;
+
+                // Create layer group for soundings
+                soundingsLayer = L.layerGroup();
+
+                // Process and add soundings
+                processSoundings(allSoundings);
+
+                // Add to map
+                soundingsLayer.addTo(map);
+
+                // Update UI
+                updateFeatureCount(allSoundings.length);
+                hideLoading();
+
+                console.log(`Loaded ${allSoundings.length} depth soundings successfully`);
+
+            } catch (error) {
+                console.error('Error loading soundings:', error);
+                updateLoadingStatus(`Error: ${error.message}`);
+
+                // Hide loading after 3 seconds even on error
+                setTimeout(hideLoading, 3000);
             }
-        });
+        }
 
-        // Toggle NOAA layer
-        document.getElementById('noaaToggle').addEventListener('change', function(e) {
-            if (e.target.checked) {
-                noaaLayer.addTo(map);
-            } else {
-                map.removeLayer(noaaLayer);
-            }
-        });
+        // Process soundings and add to layer
+        function processSoundings(features) {
+            features.forEach(feature => {
+                if (feature.geometry && feature.geometry.coordinates) {
+                    // Handle MultiPoint geometry - iterate through coordinate arrays
+                    const coordinates = feature.geometry.coordinates;
 
-        // Add current location marker if GPS available
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function(position) {
-                const userLocation = [position.coords.latitude, position.coords.longitude];
-                L.marker(userLocation)
-                    .addTo(map)
-                    .bindPopup('You are here')
-                    .openPopup();
-                map.setView(userLocation, 13);
+                    coordinates.forEach(coord => {
+                        const [lng, lat, depth] = coord; // depth is 3rd coordinate
+
+                        // Create marker with depth-based styling
+                        const marker = L.circleMarker([lat, lng], {
+                            radius: 4,
+                            fillColor: getDepthColor(depth),
+                            color: '#000',
+                            weight: 1,
+                            opacity: 0.8,
+                            fillOpacity: 0.7
+                        });
+
+                        // Add popup with depth info
+                        marker.bindPopup(`
+                            <strong>Depth Sounding</strong><br>
+                            <strong>Depth:</strong> ${depth}m<br>
+                            <strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lng.toFixed(6)}<br>
+                            <strong>Source:</strong> NOAA ENC
+                        `);
+
+                        // Add to layer with metadata
+                        marker.depthValue = depth;
+                        soundingsLayer.addLayer(marker);
+                    });
+                }
             });
         }
 
-        // Offline indicator
-        function updateOnlineStatus() {
-            const indicator = document.getElementById('offlineIndicator');
-            if (!navigator.onLine) {
-                indicator.classList.add('offline');
+        // Get color based on depth
+        function getDepthColor(depth) {
+            if (depth < 3) return '#dc2626';      // Red - Critical
+            if (depth < 6) return '#ea580c';      // Orange - Shallow
+            if (depth < 10) return '#ca8a04';     // Yellow - Moderate
+            if (depth < 15) return '#0891b2';     // Light Blue - Safe
+            return '#1e40af';                     // Blue - Deep
+        }
+
+        // Filter soundings by depth
+        function filterSoundings(filterType) {
+            if (!soundingsLayer) return;
+
+            soundingsLayer.eachLayer(layer => {
+                const depth = layer.depthValue;
+                let show = true;
+
+                switch(filterType) {
+                    case 'shallow':
+                        show = depth <= 6;
+                        break;
+                    case 'medium':
+                        show = depth > 6 && depth <= 15;
+                        break;
+                    case 'deep':
+                        show = depth > 15;
+                        break;
+                    case 'critical':
+                        show = depth < 3;
+                        break;
+                    case 'all':
+                    default:
+                        show = true;
+                }
+
+                if (show) {
+                    layer.setStyle({ opacity: 0.8, fillOpacity: 0.7 });
+                } else {
+                    layer.setStyle({ opacity: 0.1, fillOpacity: 0.1 });
+                }
+            });
+        }
+
+        // Toggle soundings visibility
+        function toggleSoundings(show) {
+            if (!soundingsLayer) return;
+
+            if (show) {
+                if (!map.hasLayer(soundingsLayer)) {
+                    map.addLayer(soundingsLayer);
+                }
             } else {
-                indicator.classList.remove('offline');
+                if (map.hasLayer(soundingsLayer)) {
+                    map.removeLayer(soundingsLayer);
+                }
             }
         }
 
-        window.addEventListener('online', updateOnlineStatus);
-        window.addEventListener('offline', updateOnlineStatus);
-        updateOnlineStatus();
+        // Update loading status
+        function updateLoadingStatus(message) {
+            const statusEl = document.getElementById('loadingStatus');
+            if (statusEl) {
+                statusEl.textContent = message;
+            }
+        }
 
-        // Register service worker for offline support
+        // Hide loading overlay
+        function hideLoading() {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                overlay.style.display = 'none';
+            }
+        }
+
+        // Update feature count display
+        function updateFeatureCount(count) {
+            const countEl = document.getElementById('featureCount');
+            if (countEl) {
+                countEl.textContent = `${count} soundings loaded`;
+            }
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize map
+            initMap();
+
+            // Control event listeners
+            document.getElementById('toggleSoundings').addEventListener('change', function(e) {
+                toggleSoundings(e.target.checked);
+            });
+
+            document.getElementById('depthFilter').addEventListener('change', function(e) {
+                filterSoundings(e.target.value);
+            });
+        });
+
+        // Service Worker Registration
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('service-worker.js')
-                .then(reg => console.log('Service Worker registered'))
-                .catch(err => console.log('Service Worker registration failed', err));
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker registration successful');
+                    })
+                    .catch(function(err) {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
         }
     </script>
 </body>
