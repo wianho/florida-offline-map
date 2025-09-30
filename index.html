@@ -58,11 +58,53 @@
             background: #FF9800;
             display: block;
         }
+
+        .layer-control {
+            position: absolute;
+            top: 70px;
+            left: 10px;
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            font-size: 13px;
+        }
+
+        .layer-control label {
+            display: block;
+            margin: 6px 0;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .layer-control input[type="checkbox"] {
+            margin-right: 8px;
+            cursor: pointer;
+        }
+
+        .layer-control h4 {
+            margin: 0 0 8px 0;
+            font-size: 14px;
+            color: #333;
+        }
     </style>
 </head>
 <body>
     <div class="offline-indicator" id="offlineIndicator">
         📡 Offline Mode
+    </div>
+
+    <div class="layer-control">
+        <h4>🗺️ Layers</h4>
+        <label>
+            <input type="checkbox" id="openSeaMapToggle">
+            ⚓ Marine Features
+        </label>
+        <label>
+            <input type="checkbox" id="noaaToggle">
+            📊 NOAA Charts
+        </label>
     </div>
 
     <div id="map"></div>
@@ -74,11 +116,46 @@
         // Initialize map centered on Florida
         const map = L.map('map').setView([27.6648, -81.5158], 7);
 
-        // Add OpenStreetMap tile layer (will be replaced with offline tiles)
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        // Add OpenStreetMap tile layer (base layer)
+        const baseLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
+
+        // OpenSeaMap marine chart overlay (buoys, markers, etc)
+        const openSeaMapLayer = L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: '© OpenSeaMap contributors',
+            opacity: 0.8
+        });
+
+        // NOAA ENC Nautical Charts (depth soundings - new 2025 service)
+        const noaaLayer = L.tileLayer.wms('https://gis.charttools.noaa.gov/arcgis/rest/services/MCS/NOAAChartDisplay/MapServer/exts/MaritimeChartService/WMSServer', {
+            layers: '0,1,2,3,4,5,6,7,8,9,10',
+            format: 'image/png',
+            transparent: true,
+            attribution: '© NOAA',
+            opacity: 0.7,
+            maxZoom: 18
+        });
+
+        // Toggle OpenSeaMap layer
+        document.getElementById('openSeaMapToggle').addEventListener('change', function(e) {
+            if (e.target.checked) {
+                openSeaMapLayer.addTo(map);
+            } else {
+                map.removeLayer(openSeaMapLayer);
+            }
+        });
+
+        // Toggle NOAA layer
+        document.getElementById('noaaToggle').addEventListener('change', function(e) {
+            if (e.target.checked) {
+                noaaLayer.addTo(map);
+            } else {
+                map.removeLayer(noaaLayer);
+            }
+        });
 
         // Add current location marker if GPS available
         if (navigator.geolocation) {
