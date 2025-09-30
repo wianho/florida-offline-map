@@ -2,6 +2,8 @@
 
 Lightweight PWA for offline Florida maps with GPS support.
 
+**🌐 Live Demo:** [https://wianho.github.io/florida-offline-map/](https://wianho.github.io/florida-offline-map/)
+
 ## Quick Start
 
 ### 1. Test it now (online)
